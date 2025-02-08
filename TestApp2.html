@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus XRP Demo - Enhanced Version</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #2a2f4c;
+            --secondary: #4CAF50;
+            --accent: #ff6b6b;
+            --background: #f5f5f5;
+            --text: #333;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--text);
+        }
+        
+        .nav {
+            background: var(--primary);
+            padding: 15px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-items {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .nav-item {
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .balance {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: block;
+            background: #ddd;
+            object-fit: cover;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .transaction-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .success { color: var(--secondary); }
+        .pending { color: #ffa500; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-items">
+            <div class="nav-item" onclick="showSection('dashboard')">Dashboard</div>
+            <div class="nav-item" onclick="showSection('profile')">Profile</div>
+            <div class="nav-item" onclick="showSection('events')">Events</div>
+            <div class="nav-item" onclick="showSection('meal-exchange')">Meal Exchange</div>
+            <div class="nav-item" onclick="showSection('transactions')">Transactions</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <h1>Dashboard</h1>
+            <div class="grid">
+                <div class="card">
+                    <h2>Wallet Overview</h2>
+                    <p>Balance: <span id="main-balance" class="balance">100 XRP</span></p>
+                    <canvas id="balanceChart"></canvas>
+                </div>
+                <div class="card">
+                    <h2>Quick Actions</h2>
+                    <button onclick="showModal('transfer')">Transfer XRP</button>
+                    <button onclick="showModal('exchange')">Exchange Credits</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="section">
+            <h1>Student Profile</h1>
+            <div class="card">
+                <img src="/api/placeholder/150/150" alt="Profile" class="profile-image">
+                <h2>John Doe</h2>
+                <p>Student ID: STU123456</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>XRP Balance</h3>
+                        <p class="balance">100</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Meal Credits</h3>
+                        <p class="balance">50</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Events Attended</h3>
+                        <p class="balance">12</p>
+                    </div>
+                </div>
+                <button onclick="editProfile()">Edit Profile</button>
+            </div>
+        </div>
+
+        <!-- Events Section -->
+        <div id="events" class="section">
+            <h1>Campus Events</h1>
+            <div id="events-grid" class="grid"></div>
+        </div>
+
+        <!-- Meal Exchange Section -->
+        <div id="meal-exchange" class="section">
+            <h1>Meal Credit Exchange</h1>
+            <div class="card">
+                <h2>Available Credits: <span id="available-credits">50</span></h2>
+                <div class="exchange-form">
+                    <input type="number" id="exchange-amount" placeholder="Number of credits">
+                    <button onclick="performExchange()">Exchange for XRP</button>
+                </div>
+                <div id="exchange-history" class="transaction-history"></div>
+            </div>
+        </div>
+
+        <!-- Transactions Section -->
+        <div id="transactions" class="section">
+            <h1>Transaction History</h1>
+            <div class="card">
+                <div id="transaction-list" class="transaction-history"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="transfer-modal" class="modal">
+        <div class="modal-content">
+            <h2>Transfer XRP</h2>
+            <input type="text" id="recipient-id" placeholder="Recipient Student ID">
+            <input type="number" id="transfer-amount" placeholder="Amount">
+            <button onclick="performTransfer()">Send XRP</button>
+            <button onclick="hideModal('transfer')">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let state = {
+            balance: 100,
+            mealCredits: 50,
+            transactions: [],
+            events: [
+                { id: 1, name: 'Campus Concert', price: 10, date: '2024-03-15', capacity: 200, registered: 150 },
+                { id: 2, name: 'Sports Tournament', price: 5, date: '2024-03-20', capacity: 100, registered: 80 },
+                { id: 3, name: 'Tech Workshop', price: 15, date: '2024-03-25', capacity: 50, registered: 35 }
+            ]
+        };
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [{
+                        label: 'XRP Balance',
+                        data: [100, 95, 105, 98, 100],
+                        borderColor: '#4CAF50',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Modal handlers
+        function showModal(modalType) {
+            document.getElementById(`${modalType}-modal`).style.display = 'flex';
+        }
+
+        function hideModal(modalType) {
+            document.getElementById(`${modalType}-modal`).style.display = 'none';
+        }
+
+        // Transaction handlers
+        function performTransfer() {
+            const amount = parseFloat(document.getElementById('transfer-amount').value);
+            const recipientId = document.getElementById('recipient-id').value;
+            
+            if (amount && recipientId) {
+                if (amount <= state.balance) {
+                    state.balance -= amount;
+                    updateBalance();
+                    addTransaction('Transfer', amount, recipientId);
+                    hideModal('transfer');
+                    alert('Transfer successful!');
+                } else {
+                    alert('Insufficient balance!');
+                }
+            }
+        }
+
+        function performExchange() {
+            const amount = parseInt(document.getElementById('exchange-amount').value);
+            if (amount && amount <= state.mealCredits) {
+                state.mealCredits -= amount;
+                state.balance += amount * 0.5; // 1 credit = 0.5 XRP
+                updateBalance();
+                updateMealCredits();
+                addTransaction('Meal Exchange', amount, 'System');
+                alert('Exchange successful!');
+            } else {
+                alert('Invalid amount or insufficient credits!');
+            }
+        }
+
+        function addTransaction(type, amount, recipient) {
+            const transaction = {
+                type,
+                amount,
+                recipient,
+                timestamp: new Date().toLocaleString(),
+                status: 'success'
+            };
+            state.transactions.unshift(transaction);
+            updateTransactionHistory();
+        }
+
+        // Update UI
+        function updateBalance() {
+            document.getElementById('main-balance').textContent = `${state.balance} XRP`;
+        }
+
+        function updateMealCredits() {
+            document.getElementById('available-credits').textContent = state.mealCredits;
+        }
+
+        function updateTransactionHistory() {
+            const container = document.getElementById('transaction-list');
+            container.innerHTML = state.transactions.map(tx => `
+                <div class="transaction-item">
+                    <div>
+                        <strong>${tx.type}</strong>
+                        <p>${tx.timestamp}</p>
+                    </div>
+                    <div class="${tx.status}">
+                        ${tx.amount} ${tx.type === 'Meal Exchange' ? 'credits' : 'XRP'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display events
+        function displayEvents() {
+            const container = document.getElementById('events-grid');
+            container.innerHTML = state.events.map(event => `
+                <div class="card">
+                    <h3>${event.name}</h3>
+                    <p>Price: ${event.price} XRP</p>
+                    <p>Date: ${event.date}</p>
+                    <p>Capacity: ${event.registered}/${event.capacity}</p>
+                    <button onclick="registerForEvent(${event.id})">Register</button>
+                </div>
+            `).join('');
+        }
+
+        function registerForEvent(eventId) {
+            const event = state.events.find(e => e.id === eventId);
+            if (event && state.balance >= event.price) {
+                state.balance -= event.price;
+                event.registered++;
+                updateBalance();
+                displayEvents();
+                addTransaction('Event Registration', event.price, event.name);
+                alert('Successfully registered for event!');
+            } else {
+                alert('Insufficient balance or event full!');
+            }
+        }
+
+        // Initialize everything
+        function initialize() {
+            initializeCharts();
+            displayEvents();
+            updateTransactionHistory();
+        }
+
+        // Start the app
+        initialize();
+    </script>
+</body>
+</html>
